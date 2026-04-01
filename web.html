@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飯糰俠 - 高階管理層數據儀表板</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc; /* 更明亮的背景色 */
+            color: #334155;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* 防止整個頁面滾動，改由右側內容區滾動 */
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #2563eb, #e11d48);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; 
+        }
+
+        /* 左側導航選單樣式 */
+        .nav-tab {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem 1.25rem;
+            color: #64748b;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            border-radius: 0.5rem;
+        }
+        .nav-tab:hover:not(.active) {
+            background-color: #f1f5f9;
+            color: #334155;
+            transform: translateX(4px);
+        }
+        
+        /* 桌面端 (左側選單) 的 Active 狀態 */
+        @media (min-width: 768px) {
+            .nav-tab.active {
+                background-color: #eff6ff; /* blue-50 */
+                color: #2563eb;
+                font-weight: 700;
+                box-shadow: inset 4px 0 0 0 #2563eb; /* 左側藍色邊條 */
+                border-radius: 0 0.5rem 0.5rem 0; /* 左側平直，右側圓角 */
+            }
+        }
+        /* 手機端 (頂部橫向選單) 的 Active 狀態 */
+        @media (max-width: 767px) {
+            .nav-tab.active {
+                background-color: #eff6ff;
+                color: #2563eb;
+                font-weight: 700;
+                box-shadow: inset 0 -3px 0 0 #2563eb; /* 底部藍色邊條 */
+            }
+        }
+
+        /* 內容區切換動畫 */
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 卡片懸停特效 */
+        .dashboard-card {
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        /* SVG 與進度條動畫 */
+        @keyframes drawLine {
+            from { stroke-dashoffset: 1000; }
+            to { stroke-dashoffset: 0; }
+        }
+        .trend-line {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+        }
+        .tab-pane.active .trend-line {
+            animation: drawLine 1.5s ease-out forwards;
+        }
+        .donut-segment {
+            transition: stroke-dasharray 1s ease-out;
+        }
+        .bar-fill {
+            transition: width 1s ease-out, height 1s ease-out;
+        }
+        
+        /* 自訂滾動條，讓整體更精緻 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="flex flex-col md:flex-row min-h-screen">
+
+    <!-- ==================== 左側導航欄 (Sidebar) ==================== -->
+    <aside class="w-full md:w-64 lg:w-72 bg-white border-r border-slate-200 flex flex-col z-50 flex-shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        <!-- 品牌 Logo 區 -->
+        <div class="p-6 border-b border-slate-100 flex items-center gap-3 bg-white sticky top-0">
+            <div class="bg-gradient-to-br from-red-600 to-red-700 text-white p-2.5 rounded-xl shadow-md">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-black text-slate-800 tracking-tight">飯糰俠</h1>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5 text-gradient">BI Dashboard</p>
+            </div>
+        </div>
+
+        <!-- 導航選單區 -->
+        <nav class="flex-1 px-4 py-6 flex flex-row md:flex-col overflow-x-auto md:overflow-y-auto space-x-2 md:space-x-0 md:space-y-2">
+            <button onclick="switchTab('overview')" class="nav-tab active" id="nav-overview">
+                <span class="text-lg w-8">🎯</span> 1. 業績總覽
+            </button>
+            <button onclick="switchTab('macro')" class="nav-tab" id="nav-macro">
+                <span class="text-lg w-8">⛅</span> 2. 環境影響
+            </button>
+            <button onclick="switchTab('micro')" class="nav-tab" id="nav-micro">
+                <span class="text-lg w-8">👥</span> 3. 客群洞察
+            </button>
+            <button onclick="switchTab('stores')" class="nav-tab" id="nav-stores">
+                <span class="text-lg w-8">🏪</span> 4. 門市表現
+            </button>
+            <button onclick="switchTab('actions')" class="nav-tab" id="nav-actions">
+                <span class="text-lg w-8">💡</span> 5. 決策建議
+            </button>
+            
+            <div class="hidden md:block my-4 border-t border-slate-100"></div> <!-- 分隔線 -->
+            
+            <button onclick="switchTab('charts')" class="nav-tab text-blue-600" id="nav-charts">
+                <span class="text-lg w-8">📊</span> 6. 綜合圖表
+            </button>
+        </nav>
+
+        <!-- 底部資訊區 -->
+        <div class="hidden md:block p-6 border-t border-slate-100 bg-slate-50 text-xs text-slate-500">
+            <p class="font-bold text-slate-700 mb-1">系統狀態</p>
+            <div class="flex items-center gap-2 mb-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>數據已同步至最新</span>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-3">© 2026 Onigiri-Hero Data Team</p>
+        </div>
+    </aside>
+
+    <!-- ==================== 右側主內容區 (Main Content) ==================== -->
+    <main class="flex-1 h-[calc(100vh-80px)] md:h-screen overflow-y-auto bg-[#f8fafc] relative">
+        
+        <!-- 頂部資料區間標示 -->
+        <div class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-3 flex justify-between items-center">
+            <div class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                <!-- 動態顯示當前頁面標題 -->
+                <span id="header-title" class="hidden md:inline-block">業績總覽</span>
+            </div>
+            <span class="text-xs font-medium text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                資料區間：1月 - 2月
+            </span>
+        </div>
+
+        <div class="p-4 sm:p-8 pb-20">
+            
+            <!-- ==================== 1. 業績總覽 ==================== -->
+            <div id="tab-overview" class="tab-pane active max-w-6xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-3 tracking-tight">年初營運狀況摘要</h2>
+                    <div class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-800 rounded-lg text-sm border border-blue-100 font-medium w-full md:w-auto shadow-sm">
+                        <span class="text-lg">💡</span>
+                        <span>高階結論：整體業績穩步增長。平日與堂食為營收基石，但<strong class="text-red-600">外賣佔比過低（僅25%）</strong>及<strong class="text-red-600">雨天抗風險能力弱</strong>是目前的營業破口。</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="dashboard-card p-6 border-t-4 border-t-blue-600 relative overflow-hidden group">
+                        <p class="text-slate-500 font-bold text-sm mb-1 uppercase tracking-wider">總營業額 (HKD)</p>
+                        <div class="text-4xl lg:text-5xl font-black text-slate-800 mb-4 tracking-tighter">
+                            $ <span class="counter" data-target="73531">0</span>
+                        </div>
+                        <div class="text-xs text-slate-500 bg-slate-50 border border-slate-100 p-2.5 rounded-lg flex justify-between items-center font-medium">
+                            <span>1月: $36.2k &rarr; 2月: $37.3k</span>
+                            <span class="text-emerald-600 font-black flex items-center bg-emerald-50 px-2 py-0.5 rounded">
+                                +3.0%
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card p-6 border-t-4 border-t-emerald-500 relative overflow-hidden group">
+                        <p class="text-slate-500 font-bold text-sm mb-1 uppercase tracking-wider">總訂單數</p>
+                        <div class="text-4xl lg:text-5xl font-black text-slate-800 mb-4 tracking-tighter">
+                            <span class="counter" data-target="2141">0</span>
+                        </div>
+                        <div class="text-xs text-slate-500 bg-slate-50 border border-slate-100 p-2.5 rounded-lg flex justify-between items-center font-medium">
+                            <span>1月: 1,050單 &rarr; 2月: 1,091單</span>
+                            <span class="text-emerald-600 font-black flex items-center bg-emerald-50 px-2 py-0.5 rounded">
+                                +3.9%
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card p-6 border-t-4 border-t-amber-500 relative overflow-hidden group">
+                        <p class="text-slate-500 font-bold text-sm mb-1 uppercase tracking-wider">平均客單價 (AOV)</p>
+                        <div class="text-4xl lg:text-5xl font-black text-slate-800 mb-4 tracking-tighter">
+                            $ <span class="counter" data-target="34.3" data-decimal="1">0</span>
+                        </div>
+                        <div class="text-xs text-slate-500 bg-slate-50 border border-slate-100 p-2.5 rounded-lg flex justify-between items-center font-medium">
+                            <span>1月: $34.1 &rarr; 2月: $34.5</span>
+                            <span class="text-emerald-600 font-black flex items-center bg-emerald-50 px-2 py-0.5 rounded">
+                                +1.2%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="dashboard-card p-6 bg-gradient-to-br from-slate-800 to-slate-900 text-white shadow-lg shadow-slate-900/10">
+                        <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
+                            <span class="bg-emerald-500 p-1.5 rounded-md shadow-sm">🔥</span> 亮點表現 (Strengths)
+                        </h3>
+                        <ul class="space-y-4 text-sm text-slate-300">
+                            <li class="flex items-start gap-3 bg-white/5 p-3 rounded-lg border border-white/10">
+                                <span class="text-green-400 text-lg leading-none mt-0.5">✓</span>
+                                <span><strong class="text-white">平日陰天為黃金組合：</strong> 創造了最高的總營業額 ($23,269) 與單量，反映通勤族群的剛性需求極強。</span>
+                            </li>
+                            <li class="flex items-start gap-3 bg-white/5 p-3 rounded-lg border border-white/10">
+                                <span class="text-green-400 text-lg leading-none mt-0.5">✓</span>
+                                <span><strong class="text-white">年輕客群黏著度高：</strong> 18-25歲貢獻了近 45% 的總營收，為品牌最穩定的基本盤。</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="dashboard-card p-6 bg-white border-red-100">
+                        <h3 class="text-lg font-bold mb-5 text-slate-800 flex items-center gap-2">
+                            <span class="bg-red-100 p-1.5 rounded-md text-red-600 shadow-sm">⚠️</span> 隱患與挑戰 (Risks)
+                        </h3>
+                        <ul class="space-y-4 text-sm text-slate-600">
+                            <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <span class="text-red-500 text-lg leading-none mt-0.5">✗</span>
+                                <span><strong class="text-slate-800">極度依賴天氣：</strong> 雨天時整體營業額直接暴跌超過一半，實體門市受氣候影響過大。</span>
+                            </li>
+                            <li class="flex items-start gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <span class="text-red-500 text-lg leading-none mt-0.5">✗</span>
+                                <span><strong class="text-slate-800">外賣市場開發不足：</strong> 目前高達 75% 為堂食/自取，未能有效透過外送平台彌補惡劣天氣流失的客源。</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 2. 環境影響 ==================== -->
+            <div id="tab-macro" class="tab-pane max-w-6xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-2 tracking-tight">大環境因素對生意的影響</h2>
+                    <p class="text-slate-500 font-medium">天氣與日期的變化如何直接影響顧客出行與點餐決策。</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="dashboard-card p-6 md:p-8">
+                        <div class="flex items-center justify-between mb-8">
+                            <h3 class="text-xl font-bold text-slate-800 tracking-tight">氣候痛點：雨天客流銳減</h3>
+                            <span class="bg-red-50 text-red-600 text-xs font-black px-3 py-1.5 rounded-full border border-red-100 tracking-widest uppercase">高風險</span>
+                        </div>
+                        
+                        <div class="flex items-end justify-between gap-4 h-48 mb-6 px-2">
+                            <div class="w-1/3 flex flex-col items-center justify-end group">
+                                <div class="text-slate-500 text-xs mb-2 font-bold opacity-0 group-hover:opacity-100 transition-opacity">889 單</div>
+                                <div class="w-full bg-blue-50 rounded-t-xl relative h-full flex items-end justify-center pb-3">
+                                    <div class="w-full bg-blue-500 rounded-t-xl absolute bottom-0 bar-fill shadow-[0_0_10px_rgba(59,130,246,0.3)]" data-height="100%"></div>
+                                    <span class="relative z-10 text-white font-black text-sm drop-shadow-md">$31k</span>
+                                </div>
+                                <div class="mt-4 text-center">
+                                    <span class="text-3xl block mb-2 drop-shadow-sm">☁️</span>
+                                    <span class="text-sm font-bold text-slate-700">陰天 (最佳)</span>
+                                </div>
+                            </div>
+                            <div class="w-1/3 flex flex-col items-center justify-end group">
+                                <div class="text-slate-500 text-xs mb-2 font-bold opacity-0 group-hover:opacity-100 transition-opacity">862 單</div>
+                                <div class="w-full bg-amber-50 rounded-t-xl relative h-[92%] flex items-end justify-center pb-3">
+                                    <div class="w-full bg-amber-400 rounded-t-xl absolute bottom-0 bar-fill shadow-[0_0_10px_rgba(251,191,36,0.3)]" data-height="100%"></div>
+                                    <span class="relative z-10 text-white font-black text-sm drop-shadow-md">$29k</span>
+                                </div>
+                                <div class="mt-4 text-center">
+                                    <span class="text-3xl block mb-2 drop-shadow-sm">☀️</span>
+                                    <span class="text-sm font-bold text-slate-700">晴天</span>
+                                </div>
+                            </div>
+                            <div class="w-1/3 flex flex-col items-center justify-end group">
+                                <div class="text-slate-500 text-xs mb-2 font-bold opacity-0 group-hover:opacity-100 transition-opacity">390 單</div>
+                                <div class="w-full bg-red-50 rounded-t-xl relative h-[38%] flex items-end justify-center pb-3">
+                                    <div class="w-full bg-red-500 rounded-t-xl absolute bottom-0 bar-fill shadow-[0_0_10px_rgba(239,68,68,0.3)]" data-height="100%"></div>
+                                    <span class="relative z-10 text-white font-black text-sm drop-shadow-md">$12k</span>
+                                </div>
+                                <div class="mt-4 text-center">
+                                    <span class="text-3xl block mb-2 drop-shadow-sm">🌧️</span>
+                                    <span class="text-sm font-bold text-red-600">雨天 (危機)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-600 mt-8 bg-slate-50 p-4 rounded-xl border border-slate-100 font-medium">👉 <strong class="text-slate-800">管理層解讀：</strong> 雨天時營業額大幅縮水超過 60%，主因是實體門市仰賴過路客。必須在此時啟動外賣平台的行銷機制來填補缺口。</p>
+                    </div>
+
+                    <div class="dashboard-card p-6 md:p-8">
+                        <h3 class="text-xl font-bold text-slate-800 mb-8 tracking-tight">消費行為：平日衝量，週末衝價</h3>
+                        
+                        <div class="space-y-8">
+                            <div>
+                                <div class="flex justify-between items-baseline mb-3">
+                                    <span class="font-bold text-slate-700 text-lg">平日 (Mon-Fri)</span>
+                                    <span class="text-sm font-bold text-slate-500">貢獻 <strong class="text-blue-600 text-xl tracking-tight">$46,564</strong> <span class="bg-blue-100 text-blue-800 px-1.5 rounded text-xs">63%</span></span>
+                                </div>
+                                <div class="h-4 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                                    <div class="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full bar-fill" data-width="63%"></div>
+                                </div>
+                                <div class="flex justify-between mt-3 text-xs md:text-sm font-medium text-slate-500">
+                                    <span class="flex items-center gap-1"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>單量極大 (1382單)</span>
+                                    <span class="flex items-center gap-1"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>客單價較低 ($33.7)</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-baseline mb-3">
+                                    <span class="font-bold text-slate-700 text-lg">週末 (Sat-Sun)</span>
+                                    <span class="text-sm font-bold text-slate-500">貢獻 <strong class="text-emerald-600 text-xl tracking-tight">$26,967</strong> <span class="bg-emerald-100 text-emerald-800 px-1.5 rounded text-xs">37%</span></span>
+                                </div>
+                                <div class="h-4 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                                    <div class="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full bar-fill" data-width="37%"></div>
+                                </div>
+                                <div class="flex justify-between mt-3 text-xs md:text-sm font-medium text-slate-500">
+                                    <span class="flex items-center gap-1"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>單量減少 (759單)</span>
+                                    <span class="flex items-center gap-1 font-bold text-emerald-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11l7-7 7 7M5 19l7-7 7 7"></path></svg>客單價較高 ($35.5)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-sm text-slate-600 mt-8 bg-slate-50 p-4 rounded-xl border border-slate-100 font-medium">👉 <strong class="text-slate-800">管理層解讀：</strong> 週末來客較少，但客人更捨得花錢加購湯品或小食。週末行銷策略應從「拉客數」轉為「推高套餐客單價」。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 3. 客群洞察 ==================== -->
+            <div id="tab-micro" class="tab-pane max-w-6xl mx-auto">
+                 <div class="mb-8">
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-2 tracking-tight">客群結構與消費偏好</h2>
+                    <p class="text-slate-500 font-medium">清楚描繪我們的核心消費者樣貌、支付習慣與就餐方式。</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="dashboard-card p-6 md:p-8 md:col-span-2">
+                        <h3 class="text-xl font-bold text-slate-800 mb-8 tracking-tight">主客群：18-35歲年輕世代</h3>
+                        <div class="space-y-7">
+                            <div class="relative">
+                                <div class="flex justify-between items-end mb-2">
+                                    <span class="font-bold text-slate-800 text-base">18-25歲 <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full ml-1">品牌主力</span></span>
+                                    <span class="text-slate-600 font-black text-lg tracking-tight">$33,471</span>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="flex-1 bg-slate-100 rounded-full h-4 overflow-hidden shadow-inner">
+                                        <div class="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full bar-fill relative" data-width="45%"></div>
+                                    </div>
+                                    <span class="text-sm font-black text-indigo-600 w-10 text-right">45%</span>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <div class="flex justify-between items-end mb-2">
+                                    <span class="font-bold text-slate-700 text-base">26-35歲</span>
+                                    <span class="text-slate-600 font-bold text-lg tracking-tight">$17,506</span>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="flex-1 bg-slate-100 rounded-full h-4 overflow-hidden shadow-inner">
+                                        <div class="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full bar-fill relative" data-width="24%"></div>
+                                    </div>
+                                    <span class="text-sm font-black text-blue-500 w-10 text-right">24%</span>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <div class="flex justify-between items-end mb-2">
+                                    <span class="font-bold text-slate-700 text-base flex items-center gap-2">36-45歲 <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-black uppercase tracking-wider border border-amber-200">最高消費力</span></span>
+                                    <span class="text-slate-600 font-bold text-lg tracking-tight">$14,066</span>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="flex-1 bg-slate-100 rounded-full h-4 overflow-hidden shadow-inner">
+                                        <div class="h-full bg-gradient-to-r from-cyan-400 to-cyan-500 rounded-full bar-fill relative" data-width="19%"></div>
+                                    </div>
+                                    <span class="text-sm font-black text-cyan-600 w-10 text-right">19%</span>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <div class="flex justify-between items-end mb-2">
+                                    <span class="font-bold text-slate-700 text-base">46歲以上</span>
+                                    <span class="text-slate-500 font-bold text-lg tracking-tight">$8,488</span>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="flex-1 bg-slate-100 rounded-full h-4 overflow-hidden shadow-inner">
+                                        <div class="h-full bg-slate-300 rounded-full bar-fill relative" data-width="12%"></div>
+                                    </div>
+                                    <span class="text-sm font-bold text-slate-400 w-10 text-right">12%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card p-6 flex flex-col items-center justify-center border-t-4 border-t-blue-500">
+                        <h3 class="text-lg font-bold text-slate-800 mb-2 w-full text-center tracking-tight">就餐方式比例</h3>
+                        <div class="relative w-48 h-48 my-4">
+                            <svg viewBox="0 0 36 36" class="w-full h-full transform -rotate-90 drop-shadow-md">
+                                <path class="text-slate-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4.5" />
+                                <path class="text-blue-500 donut-segment" data-dasharray="75 100" stroke-dasharray="0 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-4xl font-black text-blue-600 tracking-tighter">75%</span>
+                                <span class="text-sm font-bold text-slate-500 mt-1">堂食為主</span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-red-50 p-3 rounded-xl text-center text-xs text-red-600 font-bold border border-red-100">
+                            外賣市場極度未開發 (佔比僅 25%)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card p-6 md:p-8">
+                    <h3 class="text-xl font-bold text-slate-800 mb-6 tracking-tight">支付方式折射客群代溝</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="p-5 border border-slate-100 rounded-2xl bg-slate-50 flex flex-col gap-3 group hover:border-blue-200 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="text-3xl bg-white p-2.5 rounded-xl shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">📱</div>
+                                <div>
+                                    <p class="font-black text-slate-800">電子錢包</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">PayMe / AlipayHK</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-600 font-medium leading-relaxed mt-1"><strong class="text-blue-600">年輕人絕對主力。</strong> 建議推出掃碼立減或電子集點卡。</p>
+                        </div>
+                        <div class="p-5 border border-slate-100 rounded-2xl bg-slate-50 flex flex-col gap-3 group hover:border-emerald-200 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="text-3xl bg-white p-2.5 rounded-xl shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">💳</div>
+                                <div>
+                                    <p class="font-black text-slate-800">八達通</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Octopus</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-600 font-medium leading-relaxed mt-1"><strong class="text-emerald-600">全客群通用。</strong> 結帳速度最快，門市必備基礎設施。</p>
+                        </div>
+                        <div class="p-5 border border-slate-100 rounded-2xl bg-slate-50 flex flex-col gap-3 group hover:border-amber-200 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="text-3xl bg-white p-2.5 rounded-xl shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">💵</div>
+                                <div>
+                                    <p class="font-black text-slate-800">現金/信用卡</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Cash / Credit</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-600 font-medium leading-relaxed mt-1"><strong class="text-amber-600">46歲以上高度依賴。</strong> 確保收銀櫃檯暢通以防流失。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 4. 門市表現 ==================== -->
+            <div id="tab-stores" class="tab-pane max-w-6xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-2 tracking-tight">6 間分店戰力排行榜</h2>
+                    <p class="text-slate-500 font-medium">旺角與銅鑼灣店領跑，同時解構各店在「堂食與外賣」市場的營收健康度。</p>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- 左側：排行榜 -->
+                    <div class="dashboard-card p-6 md:p-8">
+                        <h3 class="text-xl font-bold text-slate-800 mb-6 tracking-tight">🏆 總營收排行</h3>
+                        <div class="space-y-6">
+                            <div class="flex items-center text-sm md:text-base">
+                                <span class="w-20 font-black text-slate-800 flex items-center gap-2"><span class="text-slate-300 text-xs">#1</span> 旺角店</span>
+                                <div class="flex-1 mx-4 bg-slate-100 rounded-full h-6 relative overflow-hidden group shadow-inner">
+                                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-full bar-fill absolute left-0 top-0 transition-all" data-width="100%"></div>
+                                </div>
+                                <div class="w-28 text-right">
+                                    <span class="text-sm md:text-base font-black text-slate-800">$14.8k</span><span class="text-xs text-slate-400 font-bold"> / 432單</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-sm md:text-base">
+                                <span class="w-20 font-black text-slate-700 flex items-center gap-2"><span class="text-slate-300 text-xs">#2</span> 銅鑼灣</span>
+                                <div class="flex-1 mx-4 bg-slate-100 rounded-full h-6 relative overflow-hidden group shadow-inner">
+                                    <div class="bg-gradient-to-r from-blue-400 to-blue-500 h-full bar-fill absolute left-0 top-0 transition-all" data-width="99%"></div>
+                                </div>
+                                <div class="w-28 text-right">
+                                    <span class="text-sm md:text-base font-black text-slate-700">$14.7k</span><span class="text-xs text-slate-400 font-bold"> / 429單</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-sm md:text-base">
+                                <span class="w-20 font-bold text-slate-600 flex items-center gap-2"><span class="text-slate-200 text-xs">#3</span> 觀塘店</span>
+                                <div class="flex-1 mx-4 bg-slate-100 rounded-full h-6 relative overflow-hidden group shadow-inner">
+                                    <div class="bg-blue-400 h-full bar-fill absolute left-0 top-0 transition-all" data-width="75%"></div>
+                                </div>
+                                <div class="w-28 text-right">
+                                    <span class="text-sm md:text-base font-bold text-slate-600">$11.2k</span><span class="text-xs text-slate-400 font-bold"> / 325單</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-sm md:text-base">
+                                <span class="w-20 font-bold text-slate-600 flex items-center gap-2"><span class="text-slate-200 text-xs">#4</span> 沙田店</span>
+                                <div class="flex-1 mx-4 bg-slate-100 rounded-full h-6 relative overflow-hidden group shadow-inner">
+                                    <div class="bg-slate-400 h-full bar-fill absolute left-0 top-0" data-width="75%"></div>
+                                </div>
+                                <div class="w-28 text-right">
+                                    <span class="text-sm md:text-base font-bold text-slate-500">$11.1k</span><span class="text-xs text-slate-400 font-bold"> / 324單</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-sm md:text-base">
+                                <span class="w-20 font-bold text-slate-600 flex items-center gap-2"><span class="text-slate-200 text-xs">#5</span> 元朗店</span>
+                                <div class="flex-1 mx-4 bg-slate-100 rounded-full h-6 relative overflow-hidden group shadow-inner">
+                                    <div class="bg-slate-300 h-full bar-fill absolute left-0 top-0" data-width="74%"></div>
+                                </div>
+                                <div class="w-28 text-right">
+                                    <span class="text-sm md:text-base font-bold text-slate-500">$11.0k</span><span class="text-xs text-slate-400 font-bold"> / 319單</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-sm md:text-base">
+                                <span class="w-20 font-bold text-slate-600 flex items-center gap-2"><span class="text-slate-200 text-xs">#6</span> 將軍澳</span>
+                                <div class="flex-1 mx-4 bg-slate-100 rounded-full h-6 relative overflow-hidden group shadow-inner">
+                                    <div class="bg-slate-200 h-full bar-fill absolute left-0 top-0" data-width="72%"></div>
+                                </div>
+                                <div class="w-28 text-right">
+                                    <span class="text-sm md:text-base font-bold text-slate-500">$10.7k</span><span class="text-xs text-slate-400 font-bold"> / 312單</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右側：新增的群組橫條圖 -->
+                    <div class="dashboard-card p-6 md:p-8 flex flex-col">
+                        <h3 class="text-xl font-bold text-slate-800 mb-2 tracking-tight">就餐方式營收結構 (堂食 vs 外賣)</h3>
+                        <p class="text-xs text-slate-500 mb-6 font-medium">對比各門市在不同就餐場景的吸金能力</p>
+                        <div class="relative flex-1 w-full min-h-[300px]">
+                            <canvas id="storeGroupedBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 洞察文字區塊 -->
+                <div class="dashboard-card p-6 bg-slate-50 border-blue-100 mb-4">
+                    <p class="text-sm text-slate-700 font-medium leading-relaxed">
+                        💡 <strong class="text-blue-700">深度洞察：</strong> 旺角與銅鑼灣店雖然總營收最高，但高度依賴實體堂食，一旦遇上雨天打擊最深。相反，<strong class="text-emerald-600">觀塘店</strong>展現了極強的外賣動能（受惠於商辦大樓的團購需求），建議其他分店可借鑒其外送包裝與菜單推廣策略，以提升整體外賣佔比。
+                    </p>
+                </div>
+            </div>
+
+            <!-- ==================== 5. 決策建議 ==================== -->
+            <div id="tab-actions" class="tab-pane max-w-6xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-2 tracking-tight">管理層行動方針</h2>
+                    <p class="text-slate-500 font-medium">基於數據洞察推導的 3 項核心策略，並附帶量化之預期成效。</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div class="dashboard-card border-t-0 overflow-hidden flex flex-col hover:-translate-y-1 transition-transform border-2 border-transparent hover:border-blue-200">
+                        <div class="bg-blue-600 text-white p-5">
+                            <h3 class="font-black text-lg tracking-tight">☔ 策略一：雨天防禦機制</h3>
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col">
+                            <div class="mb-6">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-1 rounded">具體行動 Action</span>
+                                <p class="text-sm text-slate-700 mt-3 font-medium leading-relaxed">當氣象預報有雨時，自動啟動外送平台「雨天免運」廣告，轉移線下流失客流。</p>
+                            </div>
+                            <div class="mt-auto bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                <span class="text-xs font-black text-blue-800 tracking-tight">📊 預期成效</span>
+                                <p class="text-xs text-blue-700 mt-1.5 leading-relaxed">預計每月可挽回約 <strong class="text-blue-900 text-sm">$4,800</strong> 的雨天營業額流失。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card border-t-0 overflow-hidden flex flex-col hover:-translate-y-1 transition-transform border-2 border-transparent hover:border-amber-200">
+                        <div class="bg-amber-500 text-white p-5">
+                            <h3 class="font-black text-lg tracking-tight">🍱 策略二：推高週末客單價</h3>
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col">
+                            <div class="mb-6">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-1 rounded">具體行動 Action</span>
+                                <p class="text-sm text-slate-700 mt-3 font-medium leading-relaxed">週末門市點餐機強制彈出「豪華升級組合」，瞄準高消費力客群推銷熱湯與小食。</p>
+                            </div>
+                            <div class="mt-auto bg-amber-50 p-4 rounded-xl border border-amber-100">
+                                <span class="text-xs font-black text-amber-800 tracking-tight">📊 預期成效</span>
+                                <p class="text-xs text-amber-700 mt-1.5 leading-relaxed">客單價若提升至 $38，預期每月可增加 <strong class="text-amber-900 text-sm">$1,897</strong> 額外利潤。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card border-t-0 overflow-hidden flex flex-col hover:-translate-y-1 transition-transform border-2 border-transparent hover:border-emerald-200">
+                        <div class="bg-emerald-600 text-white p-5">
+                            <h3 class="font-black text-lg tracking-tight">🎟️ 策略三：年輕客數位綁定</h3>
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col">
+                            <div class="mb-6">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-1 rounded">具體行動 Action</span>
+                                <p class="text-sm text-slate-700 mt-3 font-medium leading-relaxed">聯合 AlipayHK / PayMe 推出專屬電子集點卡，強化年輕族群黏著度。</p>
+                            </div>
+                            <div class="mt-auto bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                <span class="text-xs font-black text-emerald-800 tracking-tight">📊 預期成效</span>
+                                <p class="text-xs text-emerald-700 mt-1.5 leading-relaxed">復購率若成功提升10%，預期帶動 <strong class="text-emerald-900 text-sm">$5,000+</strong> 營收增長。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 6. 綜合圖表分析 ==================== -->
+            <div id="tab-charts" class="tab-pane max-w-6xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-2 tracking-tight">多維度數據可視化</h2>
+                    <p class="text-slate-500 font-medium">深入解析產品結構、各分店綜合能力與銷售趨勢。</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="dashboard-card p-6 md:p-8">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6 border-b border-slate-100 pb-3 tracking-tight">🍕 全店產品營收結構 (總佔比)</h3>
+                        <div class="relative h-64 w-full flex justify-center">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-6 text-center font-medium bg-slate-50 p-2 rounded">💡 飯糰作為核心產品貢獻過半營收，飲品為第二大金牛。</p>
+                    </div>
+
+                    <div class="dashboard-card p-6 md:p-8">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6 border-b border-slate-100 pb-3 tracking-tight">📈 每日營業額走勢與波動</h3>
+                        <div class="relative h-64 w-full">
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-6 text-center font-medium bg-slate-50 p-2 rounded">💡 呈現波浪型週期，週末/雨天為明顯的低谷期。</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 mb-6">
+                    <div class="dashboard-card p-6 md:p-8">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6 border-b border-slate-100 pb-3 tracking-tight">📊 各分店產品營收結構拆解</h3>
+                        <div class="relative h-72 md:h-80 w-full">
+                            <canvas id="stackedBarChart"></canvas>
+                        </div>
+                        <p class="text-sm text-slate-600 mt-6 bg-slate-50 p-4 rounded-xl font-medium border border-slate-100">
+                            👉 <strong class="text-slate-800">解讀：</strong> 銅鑼灣店的「小食」銷量異常突出，而觀塘店的「湯品」比例較低，可針對分店特性調整備貨與推廣。
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 mb-8">
+                    <div class="dashboard-card p-6 md:p-8">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6 border-b border-slate-100 pb-3 tracking-tight">🕸️ 五大分店綜合戰力雷達圖</h3>
+                        <div class="flex flex-col md:flex-row items-center gap-8">
+                            <div class="relative h-80 w-full md:w-3/5 flex justify-center">
+                                <canvas id="radarChart"></canvas>
+                            </div>
+                            <div class="w-full md:w-2/5 space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                                <h4 class="font-black text-slate-800 text-sm border-b border-slate-200 pb-2">指標說明與洞察：</h4>
+                                <ul class="text-xs text-slate-600 space-y-3 font-medium">
+                                    <li class="leading-relaxed"><strong class="text-blue-600 text-sm">旺角店：</strong> 面積最大，各項指標皆為頂標，唯獨外賣佔比偏低，過度依賴堂食。</li>
+                                    <li class="leading-relaxed"><strong class="text-rose-500 text-sm">銅鑼灣店：</strong> 營收與訂單量極高，且客單價為五店之冠。</li>
+                                    <li class="leading-relaxed"><strong class="text-emerald-500 text-sm">觀塘店：</strong> 雖然總營收為中段班，但「外賣佔比」極高，受惠於周邊辦公大樓外送需求。</li>
+                                    <li class="leading-relaxed"><strong class="text-amber-500 text-sm">沙田店：</strong> 好評率最高，社區客源穩定。</li>
+                                </ul>
+                                <p class="text-[10px] text-slate-400 mt-4 border-t border-slate-200 pt-3">* 為確保圖表清晰，僅取前 4 間重點分店比較。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 新增：第四排 最佳產品排行 + 評分分佈 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- 5. 最佳產品排行 -->
+                    <div class="dashboard-card p-6 md:p-8">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6 border-b border-slate-100 pb-3 tracking-tight">🏆 最佳熱銷產品排行 (Top 5)</h3>
+                        <div class="relative h-64 w-full">
+                            <canvas id="topProductsChart"></canvas>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-6 text-center font-medium bg-slate-50 p-2 rounded">💡 飲品類(凍檸茶、可樂)銷量極高，為帶動客單價的關鍵附屬品。</p>
+                    </div>
+
+                    <!-- 6. 滿意度評分分佈 -->
+                    <div class="dashboard-card p-6 md:p-8">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6 border-b border-slate-100 pb-3 tracking-tight">⭐ 顧客滿意度評分分佈</h3>
+                        <div class="relative h-64 w-full">
+                            <canvas id="ratingChart"></canvas>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-6 text-center font-medium bg-slate-50 p-2 rounded">💡 整體滿意度高達 3.94 分，近 75% 的顧客給予 4 分以上好評。</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // 初始化載入動畫，並根據螢幕寬度更新 Header 標題
+        document.addEventListener("DOMContentLoaded", () => {
+            triggerAnimations('overview');
+            updateHeaderTitle('overview');
+        });
+
+        // 頁籤切換與版面控制
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.getElementById('nav-' + tabId).classList.add('active');
+            
+            updateHeaderTitle(tabId);
+
+            triggerAnimations(tabId); // 所有分頁都先執行進度條動畫
+
+            // 特定圖表頁面單獨觸發繪製
+            if (tabId === 'charts') {
+                renderAdvancedCharts();
+            } else if (tabId === 'stores') {
+                renderStoreGroupedBarChart();
+            }
+            
+            // 手機版切換選單後，主內容自動滾動到最上方
+            document.querySelector('main').scrollTop = 0;
+        }
+        
+        // 更新頂部小標題
+        function updateHeaderTitle(tabId) {
+            const titles = {
+                'overview': '1. 業績總覽',
+                'macro': '2. 環境影響',
+                'micro': '3. 客群洞察',
+                'stores': '4. 門市表現',
+                'actions': '5. 決策建議',
+                'charts': '6. 綜合圖表'
+            };
+            document.getElementById('header-title').innerText = titles[tabId] || '儀表板';
+        }
+
+        // 動畫邏輯
+        function triggerAnimations(tabId) {
+            const container = document.getElementById('tab-' + tabId);
+            if(!container) return;
+
+            const counters = container.querySelectorAll('.counter');
+            counters.forEach(counter => {
+                counter.innerText = '0';
+                const target = +counter.getAttribute('data-target');
+                const isDecimal = counter.getAttribute('data-decimal');
+                const speed = 25; // 加快跳動速度
+                const inc = target / speed;
+
+                const updateCount = () => {
+                    const count = +counter.innerText.replace(/,/g, '');
+                    if (count < target) {
+                        let nextValue = count + inc;
+                        if(nextValue > target) nextValue = target;
+                        counter.innerText = isDecimal ? nextValue.toFixed(1) : Math.ceil(nextValue).toLocaleString('en-US');
+                        setTimeout(updateCount, 30);
+                    } else {
+                        counter.innerText = isDecimal ? target.toFixed(1) : target.toLocaleString('en-US');
+                    }
+                };
+                setTimeout(updateCount, 100);
+            });
+
+            const bars = container.querySelectorAll('.bar-fill');
+            bars.forEach(bar => {
+                if(bar.dataset.width) bar.style.width = '0%';
+                if(bar.dataset.height) bar.style.height = '0%';
+                setTimeout(() => {
+                    if(bar.dataset.width) bar.style.width = bar.dataset.width;
+                    if(bar.dataset.height) bar.style.height = bar.dataset.height;
+                }, 50); 
+            });
+
+            const donuts = container.querySelectorAll('.donut-segment');
+            donuts.forEach(donut => {
+                donut.style.strokeDasharray = '0 100';
+                setTimeout(() => {
+                    donut.style.strokeDasharray = donut.dataset.dasharray;
+                }, 100);
+            });
+        }
+
+        // --- Chart.js 繪圖邏輯 ---
+        let pieChartObj = null;
+        let lineChartObj = null;
+        let stackedBarChartObj = null;
+        let radarChartObj = null;
+        let storeGroupedBarChartObj = null;
+        let topProductsChartObj = null; // 新增：最佳產品圖表實例
+        let ratingChartObj = null; // 新增：評分分佈圖表實例
+
+        // 新增：繪製門市群組橫條圖
+        function renderStoreGroupedBarChart() {
+            const ctx = document.getElementById('storeGroupedBarChart').getContext('2d');
+            if(storeGroupedBarChartObj) storeGroupedBarChartObj.destroy();
+            
+            Chart.defaults.font.family = "'Noto Sans TC', sans-serif";
+            Chart.defaults.color = '#64748b';
+
+            storeGroupedBarChartObj = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['旺角店', '銅鑼灣店', '觀塘店', '沙田店', '元朗店', '將軍澳店'],
+                    datasets: [
+                        {
+                            label: '堂食營收 (HKD)',
+                            data: [11800, 11500, 6200, 8100, 8500, 8000],
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4
+                        },
+                        {
+                            label: '外賣營收 (HKD)',
+                            data: [3000, 3200, 5000, 3000, 2500, 2700],
+                            backgroundColor: '#10b981',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y', // 設定為橫向長條圖
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: { color: '#f1f5f9', drawBorder: false },
+                            ticks: { font: { size: 11 } }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { weight: 'bold', color: '#334155' } }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed.x !== null) {
+                                        label += '$' + context.parsed.x.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 綜合圖表區
+        function renderAdvancedCharts() {
+            Chart.defaults.font.family = "'Noto Sans TC', sans-serif";
+            Chart.defaults.color = '#64748b';
+
+            // 1. 圓餅圖
+            const ctxPie = document.getElementById('pieChart').getContext('2d');
+            if(pieChartObj) pieChartObj.destroy();
+            pieChartObj = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['飯糰', '飲品', '小食', '湯品'],
+                    datasets: [{
+                        data: [36765, 21500, 9500, 5766],
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { position: 'right', labels: { usePointStyle: true, padding: 20 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed !== null) {
+                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'HKD', maximumFractionDigits: 0 }).format(context.parsed);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. 折線圖
+            const ctxLine = document.getElementById('lineChart').getContext('2d');
+            if(lineChartObj) lineChartObj.destroy();
+            const labels = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5(週末)', 'Day 6(週末)', 'Day 7', 'Day 8', 'Day 9(大雨)', 'Day 10', 'Day 11', 'Day 12(週末)', 'Day 13(週末)', 'Day 14'];
+            const dataPoints = [2100, 2350, 2500, 2200, 2800, 2950, 2150, 2400, 850, 1900, 2300, 2750, 2900, 2250];
+
+            lineChartObj = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '單日營業額 (HKD)',
+                        data: dataPoints,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#3b82f6',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9', drawBorder: false } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 3. 堆疊棒形圖
+            const ctxBar = document.getElementById('stackedBarChart').getContext('2d');
+            if(stackedBarChartObj) stackedBarChartObj.destroy();
+            stackedBarChartObj = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['旺角店', '銅鑼灣店', '觀塘店', '沙田店', '元朗店', '將軍澳店'],
+                    datasets: [
+                        { label: '飯糰', data: [7500, 7200, 5600, 5800, 5500, 5165], backgroundColor: '#3b82f6', borderRadius: {topLeft: 0, topRight: 0, bottomLeft: 4, bottomRight: 4} },
+                        { label: '飲品', data: [4200, 4100, 3300, 3100, 3500, 3300], backgroundColor: '#10b981' },
+                        { label: '小食', data: [2100, 2600, 1500, 1200, 1100, 1000], backgroundColor: '#f59e0b' },
+                        { label: '湯品', data: [1000, 800, 800, 1000, 900, 1266], backgroundColor: '#ef4444', borderRadius: {topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0} }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, grid: { color: '#f1f5f9', drawBorder: false } }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
+                        tooltip: { mode: 'index', intersect: false }
+                    }
+                }
+            });
+
+            // 4. 雷達圖
+            const ctxRadar = document.getElementById('radarChart').getContext('2d');
+            if(radarChartObj) radarChartObj.destroy();
+            radarChartObj = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['營收能力', '客單價', '外賣佔比', '訂單數量', '好評率'],
+                    datasets: [
+                        {
+                            label: '旺角店',
+                            data: [98, 85, 40, 100, 88], 
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: '#3b82f6',
+                            pointBackgroundColor: '#3b82f6',
+                            borderWidth: 2
+                        },
+                        {
+                            label: '銅鑼灣店',
+                            data: [95, 95, 50, 98, 85],
+                            backgroundColor: 'rgba(244, 63, 94, 0.2)', 
+                            borderColor: '#f43f5e',
+                            pointBackgroundColor: '#f43f5e',
+                            borderWidth: 2
+                        },
+                        {
+                            label: '觀塘店',
+                            data: [75, 82, 90, 75, 80],
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)', 
+                            borderColor: '#10b981',
+                            pointBackgroundColor: '#10b981',
+                            borderWidth: 2
+                        },
+                        {
+                            label: '沙田店',
+                            data: [74, 88, 60, 74, 95],
+                            backgroundColor: 'rgba(245, 158, 11, 0.2)', 
+                            borderColor: '#f59e0b',
+                            pointBackgroundColor: '#f59e0b',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0, 0, 0, 0.05)' },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                            pointLabels: {
+                                font: { size: 12, family: "'Noto Sans TC', sans-serif", weight: 'bold' },
+                                color: '#334155'
+                            },
+                            ticks: { display: false, min: 0, max: 100 }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                    }
+                }
+            });
+
+            // 5. 最佳產品排行 (Top 5 Horizontal Bar Chart)
+            const ctxTop = document.getElementById('topProductsChart').getContext('2d');
+            if(topProductsChartObj) topProductsChartObj.destroy();
+            topProductsChartObj = new Chart(ctxTop, {
+                type: 'bar',
+                data: {
+                    labels: ['凍檸茶', '可樂', '抹茶拿鐵', '薯條', '經典飯糰'],
+                    datasets: [{
+                        label: '總銷量 (份)',
+                        data: [213, 185, 181, 179, 161],
+                        backgroundColor: ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { color: '#f1f5f9', drawBorder: false } },
+                        y: { grid: { display: false }, ticks: { font: { weight: 'bold', color: '#334155' } } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { intersect: false }
+                    }
+                }
+            });
+
+            // 6. 滿意度評分分佈 (Rating Distribution Vertical Bar Chart)
+            const ctxRating = document.getElementById('ratingChart').getContext('2d');
+            if(ratingChartObj) ratingChartObj.destroy();
+            ratingChartObj = new Chart(ctxRating, {
+                type: 'bar',
+                data: {
+                    labels: ['4.5 - 5.0 (極佳)', '4.0 - 4.4 (滿意)', '3.0 - 3.9 (普通)', '2.0 - 2.9 (待改善)', '1.0 - 1.9 (差評)'],
+                    datasets: [{
+                        label: '訂單數量',
+                        data: [850, 741, 400, 110, 40],
+                        backgroundColor: ['#10b981', '#3b82f6', '#fcd34d', '#f97316', '#ef4444'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                        y: { grid: { color: '#f1f5f9', drawBorder: false } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { intersect: false }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
