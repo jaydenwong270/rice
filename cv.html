@@ -1,0 +1,110 @@
+% --- UNIVERSAL PREAMBLE BLOCK ---
+\documentclass[11pt, a4paper]{article}
+\usepackage[a4paper, top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\usepackage{fontspec}
+\usepackage[japanese, bidi=basic, provide=*]{babel}
+
+\babelprovide[import, onchar=ids fonts]{japanese}
+\babelprovide[import, onchar=ids fonts]{english}
+
+% Set default font to Sans Serif (Noto Sans)
+\babelfont{rm}{Noto Sans}
+\babelfont[japanese]{rm}{Noto Sans CJK JP}
+
+\usepackage{enumitem}
+\setlist[itemize]{label=-}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+% Color Definitions
+\definecolor{primaryblue}{RGB}{30, 58, 138}
+\definecolor{linegray}{RGB}{200, 200, 200}
+
+% Section Formatting
+\titleformat{\section}{\large\bfseries\color{primaryblue}}{}{0em}{}[\titlerule]
+\titlespacing{\section}{0pt}{12pt}{8pt}
+
+\begin{document}
+
+% --- HEADER ---
+\begin{center}
+    {\Huge \bfseries 黃鉦軒 (WONG CHING HIN)} \\
+    \vspace{4pt}
+    澳門培正中學 · 高二理組 \\
+    \vspace{4pt}
+    \small 聯絡電話：+853 6662 7022 · 電郵：jaydenwong270@gmail.com \\
+    \small 項目領域：AI 智能系統、數據科學、開源硬件研發
+\end{center}
+
+% --- OBJECTIVE ---
+\section{個人簡介}
+本人為具備「軟硬結合」研發能力的高中生，專精於大型語言模型 (LLM) 應用與數據科學。曾代表澳門於「日內瓦國際發明展」及「國際數據科學奧林匹克」獲得頂尖獎項。具備從需求對接、程式編寫到硬件原型製作的全流程開發經驗，熱衷於利用 AI 技術解決智慧城市中的實際痛點。
+
+% --- TOP ACHIEVEMENTS ---
+\section{核心科技成就}
+\begin{itemize}
+    \item \textbf{2025 瑞士日內瓦國際發明展 (Geneva Inventions)} - \textbf{青少年組 金獎}
+    \begin{itemize}
+        \item 獲獎項目：IntelliServe - AI 智能餐飲反饋系統。負責系統架構設計、RAG 檢索增強生成算法實現及餐廳需求對接。
+    \end{itemize}
+    \item \textbf{第五屆 IDSOL 國際數據科學奧林匹克} - \textbf{結構組 亞軍}
+    \begin{itemize}
+        \item 於高壓環境下完成數據分析建模，展現卓越的邏輯思維與數據處理能力。
+    \end{itemize}
+    \item \textbf{Botball 亞洲區機器人對抗賽 (杭州)} - \textbf{一等獎 \& 卓越工程師獎 (最高榮譽)}
+    \begin{itemize}
+        \item 負責機器人邏輯控制與結構優化，獲評審團公認具備專業工程師素養。
+    \end{itemize}
+\end{itemize}
+
+% --- TECHNICAL SKILLS ---
+\section{個人技能 (Maker \& Programming Skills)}
+\begin{itemize}
+    \item \textbf{編程與 AI 應用 (Programming \& AI)}
+    \begin{itemize}
+        \item \textbf{程式語言：} 精通 Python, C++；具備高效開發 HTML/CSS 前端介面能力。
+        \item \textbf{AI 工具鏈：} 熟練運用 Claude Code, Gemini (AISTUDIO), ChatGPT, VS Code 進行 AI 協作編程。
+        \item \textbf{API 整合：} 具備 DeepSeek, Qwen (通義千問), Mini-Max 等開源數據模型 API 調用與微調經驗。
+        \item \textbf{開源協作：} 活躍使用 GitHub 進行項目版本控制與開源組件整合。
+    \end{itemize}
+    \item \textbf{3D 建模與 2D 繪圖 (Design)}
+    \begin{itemize}
+        \item 熟練使用 \textbf{TinkerCAD}, \textbf{123D Design} 進行 3D 建模，具備 3D 打印實體原型開發經驗。
+        \item 能製作鐳射切割 (Laser Cutting) 所需之平面設計圖稿，實現快速打樣。
+    \end{itemize}
+    \item \textbf{硬件開發與動手能力 (Hardware \& DIY)}
+    \begin{itemize}
+        \item \textbf{電路製作：} 具備 PCB 電路板繪製與精密電子電路焊接能力。
+        \item \textbf{開源硬件：} 熟悉 Arduino 生態系統，具備 WRO (世界機器人大賽) Sport 類別參賽經驗，能獨立完成軟硬件交互邏輯。
+    \end{itemize}
+\end{itemize}
+
+% --- EXTRACURRICULAR ---
+\section{社團經歷與領導力}
+\begin{itemize}
+    \item \textbf{弦樂團 (A團/B團) - 首席}
+    \begin{itemize}
+        \item 曾帶領樂團赴新加坡、法國、東歐各國交流演出，具備卓越的團隊協作與國際視野。
+    \end{itemize}
+    \item \textbf{數據科學與商業分析小組 - 成員}
+    \begin{itemize}
+        \item 參加哈佛 BPC 比賽與校內數據科學培訓，持續深耕專業分析技術。
+    \end{itemize}
+\end{itemize}
+
+% --- OTHER AWARDS ---
+\section{其他榮譽}
+\begin{itemize}
+    \item \textbf{Google Gemini Educator}: 官方認證證書。
+    \item \textbf{Intel AI Global Impact Festival}: 多項 AI 應用證書。
+    \item \textbf{ABRSM}: 鋼琴 8 級、小提琴 5 級優秀證書。
+    \item \textbf{澳門藝術節公開組}: 攝影比賽 冠軍。
+\end{itemize}
+
+\vspace{20pt}
+\begin{center}
+    \textit{本人聲明以上履歷內容屬實，並具備獨立完成智慧城市相關項目研發之專業能力。}
+\end{center}
+
+\end{document}

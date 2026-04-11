@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliServe 四大核心功能區 - 對齊架構圖配色</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Noto+Sans+HK:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #F1F5F9; 
+            font-family: 'Noto Sans HK', sans-serif;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+        .montserrat { font-family: 'Montserrat', sans-serif; }
+
+        .poster-container {
+            width: 100%;
+            max-width: 1400px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+
+        /* 藍色徽章 (顧客端 - F1, F2, F3) */
+        .badge-blue {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            min-width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.875rem;
+            font-weight: 900;
+            font-family: 'Montserrat', sans-serif;
+            box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+        }
+
+        /* 橙色徽章 (商家端 - F4) */
+        .badge-orange {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: white;
+            min-width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.875rem;
+            font-weight: 900;
+            font-family: 'Montserrat', sans-serif;
+            box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.4);
+        }
+
+        .mockup-card {
+            background-color: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.12), 0 0 0 1px rgba(226, 232, 240, 0.8);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+        .mockup-card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body>
+
+    <div class="poster-container">
+        
+        <!-- ==============================================
+             【左欄】 顧客端功能 A (F1 & F2) - 藍色系
+             ============================================== -->
+        <div class="flex flex-col gap-16">
+            
+            <!-- ⭐ Function 1: 情境感知智能推薦 -->
+            <div class="flex flex-col gap-6">
+                <div class="flex items-center gap-4">
+                    <div class="badge-blue">1</div>
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tight">LLM 情境感知智能推薦</h2>
+                </div>
+                <ul class="space-y-4 pl-2">
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-check-circle text-blue-600 text-[18px] mt-1 shrink-0"></i>
+                        <p class="text-[15px] text-slate-600 leading-relaxed"><span class="font-bold text-slate-800">LLM 結合實時數據</span>，動態生成個性化點餐建議。</p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-check-circle text-blue-600 text-[18px] mt-1 shrink-0"></i>
+                        <p class="text-[15px] text-slate-600 leading-relaxed">結合 <span class="font-bold text-blue-600">RAG 技術</span>確保推薦不產生幻覺。</p>
+                    </li>
+                </ul>
+                <div class="flex justify-center gap-6 mt-2">
+                    <!-- 手機截圖模擬 -->
+                    <div class="mockup-card w-[220px] bg-white"><div class="h-48 bg-slate-50 flex items-center justify-center text-slate-300 text-xs text-center p-4">心理測試介面<br>(參照 Canva 手機模板)</div></div>
+                    <div class="mockup-card w-[220px] bg-white"><div class="h-48 bg-slate-50 flex items-center justify-center text-slate-300 text-xs text-center p-4">AI 推薦結果介面<br>(參照 Canva 手機模板)</div></div>
+                </div>
+            </div>
+
+            <!-- ⭐ Function 2: 語義互補配搭 -->
+            <div class="flex flex-col gap-6">
+                <div class="flex items-center gap-4">
+                    <div class="badge-blue">2</div>
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tight">LLM 語義互補配搭推薦</h2>
+                </div>
+                <ul class="space-y-4 pl-2">
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-check-circle text-blue-600 text-[18px] mt-1 shrink-0"></i>
+                        <p class="text-[15px] text-slate-600 leading-relaxed">利用 <span class="font-bold text-blue-600">PCA 降維技術</span>與向量語義空間計算跨維度互補推薦。</p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-check-circle text-blue-600 text-[18px] mt-1 shrink-0"></i>
+                        <p class="text-[15px] text-slate-600 leading-relaxed">突破傳統關聯推薦，根據口味向量精準推薦完美對沖配搭。</p>
+                    </li>
+                </ul>
+                <div class="flex justify-center mt-2">
+                    <div class="mockup-card w-full max-w-[400px] h-40 bg-white flex items-center justify-center text-slate-300 text-xs">
+                        PCA 散點圖 (對齊架構圖視覺)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================================
+             【右欄】 顧客端功能 B (F3) + 商家端 (F4) 
+             ============================================== -->
+        <div class="flex flex-col gap-16">
+            
+            <!-- ⭐ Function 3: 動態反饋對話 - 改為藍色 (顧客端) -->
+            <div class="flex flex-col gap-6">
+                <div class="flex items-center gap-4">
+                    <div class="badge-blue">3</div>
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tight">LLM 動態反饋對話</h2>
+                </div>
+                <ul class="space-y-4 pl-2">
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-check-circle text-blue-600 text-[18px] mt-1 shrink-0"></i>
+                        <p class="text-[15px] text-slate-600 leading-relaxed"><span class="font-bold text-slate-800">根據實際訂單實時追問</span>，將對話結構化為情感與建議。</p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-check-circle text-blue-600 text-[18px] mt-1 shrink-0"></i>
+                        <p class="text-[15px] text-slate-600 leading-relaxed">提供<span class="font-bold text-blue-600">匿名模式</span>，收集比靜態表單更真實詳盡的意見。</p>
+                    </li>
+                </ul>
+                <div class="flex justify-center mt-2">
+                    <div class="mockup-card w-[340px] h-[220px] bg-slate-50 flex items-center justify-center text-slate-300 text-xs">
+                        AI 聊天對話介面 (顧客端)
+                    </div>
+                </div>
+            </div>
+
+            <!-- ⭐ Function 4: 商業智能 - 橙色 (商家端) -->
+            <div class="flex flex-col gap-6">
+                <div class="flex items-center gap-4">
+                    <div class="badge-orange">4</div>
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tight">對話式商業智能 (BI)</h2>
+                </div>
+                <ul class="space-y-4 pl-2">
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-exclamation-circle text-orange-500 text-[18px] mt-1 shrink-0"></i>
+                        <p class="text-[15px] text-slate-600 leading-relaxed">商家透過<span class="font-bold text-slate-800">自然語言提問</span>即可即時獲取數據歸因分析。</p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fas fa-exclamation-circle text-orange-500 text-[18px] mt-1 shrink-0"></i>
+                        <p class="text-[15px] text-slate-600 leading-relaxed"><span class="font-bold text-orange-600">對話介面取代複雜儀表板</span>，快速獲取自動化洞察與異常預警。</p>
+                    </li>
+                </ul>
+                <div class="flex justify-center mt-2">
+                    <div class="mockup-card w-full h-[220px] bg-slate-900 flex items-center justify-center text-slate-500 text-xs">
+                        商家管理後台 / 洞察分析圖表 (商家端)
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
