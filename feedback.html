@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>動態反饋 VS 傳統問卷 - 滿版比例</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Noto+Sans+HK:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #cbd5e1; 
+            font-family: 'Noto Sans HK', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .montserrat { font-family: 'Montserrat', sans-serif; }
+        
+        /* 強制設定 8:6 比例，並微調內距讓內容更滿 */
+        .comparison-container-8x6 {
+            width: 100%;
+            max-width: 800px; 
+            aspect-ratio: 8 / 6; 
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.2);
+            padding: 20px; /* 縮小最外層留白，讓紅框區域更大 */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .vs-badge-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 900;
+            font-family: 'Montserrat', sans-serif;
+            border: 4px solid #ffffff;
+            box-shadow: 0 8px 15px -3px rgba(0,0,0,0.15);
+            z-index: 20;
+        }
+
+        .scroll-hide::-webkit-scrollbar { display: none; }
+        .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body>
+
+    <div class="comparison-container-8x6">
+        
+        <!-- 頂部標題說明 (更緊湊) -->
+        <div class="text-center mb-4 shrink-0">
+            <h2 class="text-[20px] font-black text-slate-800 tracking-tight mb-1">顛覆傳統：重新定義顧客反饋體驗</h2>
+            <p class="text-slate-500 text-[12.5px] font-bold">消除填表阻力，將反饋轉化為自然流暢的日常對話</p>
+        </div>
+
+        <!-- 下方左右並排區塊 (最大化填滿) -->
+        <div class="flex-1 flex gap-4 relative overflow-hidden">
+            
+            <div class="vs-badge-center">VS</div>
+
+            <!-- ==========================================
+                 左側：IntelliServe (解決方案)
+                 ========================================== -->
+            <div class="flex-1 flex flex-col rounded-xl overflow-hidden border-2 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.15)] relative z-10 bg-white">
+                
+                <div class="bg-blue-600 text-white text-center py-2 px-4 flex justify-between items-center shrink-0">
+                    <span class="font-black text-[13.5px] tracking-wide"><i class="fas fa-robot text-blue-200 mr-2"></i> IntelliServe 動態對話</span>
+                    <span class="bg-green-400 text-green-900 text-[8.5px] font-bold px-2 py-0.5 rounded-full uppercase">Solution</span>
+                </div>
+
+                <!-- 模擬聊天介面 (加入結尾對話填滿空間) -->
+                <div class="bg-[#fdfbf5] p-4 flex-1 overflow-y-auto scroll-hide flex flex-col gap-3.5">
+                    <div class="text-center text-[9px] text-slate-400 font-bold mb-0.5">TODAY 20:38</div>
+                    
+                    <div class="flex items-start gap-2">
+                        <div class="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center text-white text-[10px] shrink-0"><i class="fas fa-store"></i></div>
+                        <div class="bg-white border border-orange-100 p-2.5 rounded-2xl rounded-tl-sm text-[12px] text-slate-700 shadow-sm max-w-[85%] leading-relaxed">
+                            哈囉！多謝你幫襯我哋嘅楊枝金撈呀！想問吓你今次食完之後，整體覺得點呀？
+                        </div>
+                    </div>
+
+                    <div class="flex items-start justify-end gap-2">
+                        <div class="bg-blue-100 text-blue-800 p-2.5 rounded-2xl rounded-tr-sm text-[12px] shadow-sm max-w-[85%] font-bold">
+                            好正！好滿意
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-2">
+                        <div class="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center text-white text-[10px] shrink-0"><i class="fas fa-robot"></i></div>
+                        <div class="bg-white border border-orange-100 p-2.5 rounded-2xl rounded-tl-sm text-[12px] text-slate-700 shadow-sm max-w-[85%] leading-relaxed">
+                            太好啦！聽到你咁滿意真係好開心！可以講多少少邊方面最令你覺得「好正」嗎？
+                        </div>
+                    </div>
+
+                    <div class="flex items-start justify-end gap-2">
+                        <div class="bg-blue-100 text-blue-800 p-2.5 rounded-2xl rounded-tr-sm text-[12px] shadow-sm max-w-[85%] font-bold">
+                            芒果好甜好新鮮
+                        </div>
+                    </div>
+
+                    <!-- 新增的結尾回應，填補下方空隙 -->
+                    <div class="flex items-start gap-2">
+                        <div class="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center text-white text-[10px] shrink-0"><i class="fas fa-robot"></i></div>
+                        <div class="bg-white border border-orange-100 p-2.5 rounded-2xl rounded-tl-sm text-[12px] text-slate-700 shadow-sm max-w-[85%] leading-relaxed">
+                            多謝你嘅寶貴意見呀！我哋已經記錄低，會繼續保持芒果嘅高品質。期待你下次再嚟幫襯！🌟
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border-t border-blue-100 p-2.5 text-center shrink-0">
+                    <p class="text-blue-700 text-[12.5px] font-black"><i class="fas fa-chart-line mr-1"></i> 預期回覆率：40%+ (高互動)</p>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 右側：傳統問卷 (痛點)
+                 ========================================== -->
+            <div class="flex-1 flex flex-col rounded-xl overflow-hidden border-2 border-slate-200 bg-white relative opacity-80 filter grayscale-[30%]">
+                
+                <div class="bg-slate-500 text-white text-center py-2 px-4 flex justify-between items-center shrink-0">
+                    <span class="font-bold text-[13.5px] tracking-wide"><i class="fas fa-file-alt text-slate-300 mr-2"></i> 傳統靜態問卷</span>
+                    <span class="bg-slate-600 text-slate-200 text-[8.5px] font-bold px-2 py-0.5 rounded-full uppercase">Pain Point</span>
+                </div>
+
+                <div class="p-4 flex-1 overflow-y-auto scroll-hide flex flex-col gap-3.5">
+                    
+                    <div class="space-y-1.5">
+                        <p class="text-[11px] font-bold text-slate-800 leading-snug"><span class="text-red-500">*</span> 17. 這次用餐後，您覺得什麼時候會再來呢？<br><span class="text-[9.5px] text-slate-500 font-normal">When do you think you'll visit us again?</span></p>
+                        <div class="space-y-1 pl-2 text-[10px] text-slate-600">
+                            <label class="flex items-center gap-1.5"><input type="radio" disabled class="w-2.5 h-2.5"> 一周內 / Within a week</label>
+                            <label class="flex items-center gap-1.5"><input type="radio" disabled class="w-2.5 h-2.5"> 一個月內 / Within a month</label>
+                            <label class="flex items-center gap-1.5"><input type="radio" disabled class="w-2.5 h-2.5"> 三個月內 / Within three months</label>
+                            <label class="flex items-center gap-1.5"><input type="radio" disabled class="w-2.5 h-2.5"> 不確定 / Not sure</label>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <p class="text-[11px] font-bold text-slate-800 leading-snug"><span class="text-red-500">*</span> 18. 您會推薦我們給家人和朋友嗎？<br><span class="text-[9.5px] text-slate-500 font-normal">Would you recommend us to family and friends?</span></p>
+                        <div class="space-y-1 pl-2 text-[10px] text-slate-600">
+                            <label class="flex items-center gap-1.5"><input type="radio" disabled class="w-2.5 h-2.5"> 📣 當然會 / Definitely</label>
+                            <label class="flex items-center gap-1.5"><input type="radio" disabled class="w-2.5 h-2.5"> 😊 可能會 / Probably</label>
+                            <label class="flex items-center gap-1.5"><input type="radio" disabled class="w-2.5 h-2.5"> 🤔 還不確定 / Not Sure</label>
+                            <label class="flex items-center gap-1.5"><input type="radio" disabled class="w-2.5 h-2.5"> 🙁 不會 / No</label>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <p class="text-[11px] font-bold text-slate-800 leading-snug"><span class="text-red-500">*</span> 19. 留下您的電話號碼，以便我們更好地服務您！<br><span class="text-[8.5px] text-slate-500 font-normal">Please leave your phone number for better service!</span></p>
+                        <textarea class="w-full border border-slate-300 rounded p-1 text-[9px] bg-slate-50 mt-1" rows="1" disabled></textarea>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <p class="text-[11px] font-bold text-slate-800 leading-snug"><span class="text-red-500">*</span> 20. 還有什麼想告訴我們的嗎？<br><span class="text-[8.5px] text-slate-500 font-normal">Anything else you'd like to tell us?</span></p>
+                        <textarea class="w-full border border-slate-300 rounded p-1 text-[9px] bg-slate-50 mt-1" rows="2" disabled></textarea>
+                    </div>
+
+                </div>
+
+                <div class="bg-slate-100 border-t border-slate-200 p-2.5 text-center shrink-0">
+                    <p class="text-slate-500 text-[12.5px] font-bold"><i class="fas fa-arrow-down mr-1"></i> 平均回覆率：約 5% (高阻力)</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

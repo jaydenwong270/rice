@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多謝你嘅反饋 - IntelliServe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Noto+Sans+HK:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            /* 模擬背景的淺米黃色 */
+            background-color: #fdfbf5; 
+            font-family: 'Noto Sans HK', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .montserrat { font-family: 'Montserrat', sans-serif; }
+    </style>
+</head>
+<body>
+
+    <!-- 手機端模擬容器 -->
+    <div class="w-full max-w-[400px] px-6 py-10 flex flex-col items-center">
+        
+        <!-- 標題區 -->
+        <h1 class="text-[22px] font-black text-slate-800 mb-2 tracking-wide flex items-center justify-center gap-2">
+            多謝你嘅反饋！ <span class="text-2xl">🙏</span>
+        </h1>
+        <p class="text-slate-500 text-[15px] mb-8 font-medium">我哋會努力做得更好</p>
+
+        <!-- AI 摘要卡片 -->
+        <div class="bg-white w-full rounded-[28px] p-6 shadow-[0_4px_15px_rgba(0,0,0,0.03)] mb-6">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 shrink-0">
+                    <i class="fas fa-robot text-[13px]"></i>
+                </div>
+                <h2 class="font-bold text-slate-800 text-[15px]">AI 已記錄你嘅反饋</h2>
+            </div>
+            
+            <div class="text-slate-600 text-[14px] leading-relaxed mb-6">
+                反饋摘要：<span class="font-bold text-slate-800">客人反映「楊枝金撈」的芒果甜度不足。已標籤為【食材品質】並通知廚房留意。</span>
+            </div>
+            
+            <div class="text-[10px] text-slate-400 text-center font-medium tracking-wide">
+                · AI 已自動分類並通知店長跟進 ·
+            </div>
+        </div>
+
+        <!-- 優惠券卡片 -->
+        <div class="bg-gradient-to-b from-[#fcad5f] to-[#fb923c] w-full rounded-[28px] p-8 shadow-lg text-center text-white mb-6 relative overflow-hidden">
+            <!-- 裝飾性光暈 -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-white rounded-full opacity-10 -translate-y-1/2 translate-x-1/2"></div>
+            
+            <h2 class="montserrat text-[56px] font-black mb-0 drop-shadow-md leading-none">$5</h2>
+            <h3 class="text-[20px] font-bold mb-2 tracking-wide">優惠券</h3>
+            <p class="text-[14px] opacity-90 mb-6 font-medium">下次惠顧適用</p>
+            
+            <div class="bg-white/20 rounded-2xl py-3 px-5 inline-block text-[12px] font-bold tracking-wider border border-white/30 backdrop-blur-sm">
+                優惠碼：THANKS9AED<br>
+                <span class="opacity-80 font-medium mt-1 inline-block">有效期至 2026-05-13</span>
+            </div>
+        </div>
+
+        <!-- 按鈕區 -->
+        <button class="w-full border-2 border-orange-500 text-orange-500 font-bold text-[15px] py-3.5 rounded-full mb-4 hover:bg-orange-50 transition-colors flex items-center justify-center gap-2">
+            <i class="fas fa-bookmark text-sm"></i> 儲存到我嘅優惠
+        </button>
+        
+        <button class="w-full bg-slate-100 text-slate-600 font-bold text-[15px] py-3.5 rounded-full hover:bg-slate-200 transition-colors flex items-center justify-center gap-2">
+            <i class="fas fa-home text-sm"></i> 返回首頁
+        </button>
+
+    </div>
+
+</body>
+</html>
